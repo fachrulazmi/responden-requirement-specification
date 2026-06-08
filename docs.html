@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi - RCS Workspace</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='12 2 2 7 12 12 22 7 12 2' /><polyline points='2 17 12 22 22 17' /><polyline points='2 12 12 17 22 12' /></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .dark { color-scheme: dark; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #000; }
+        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+        .prose h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .prose h3::before { content: ''; display: block; width: 4px; height: 12px; background: currentColor; }
+        .prose p { margin-bottom: 1rem; line-height: 1.6; color: #52525b; }
+        .dark .prose p { color: #a1a1aa; }
+        .prose ul { list-style-type: none; padding-left: 0; margin-bottom: 1.5rem; }
+        .prose li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+        .prose li::before { content: '→'; position: absolute; left: 0; font-weight: bold; }
+        .step-number { font-family: monospace; font-weight: 800; opacity: 0.2; font-size: 4rem; position: absolute; right: 0; top: -1rem; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-zinc-200 dark:bg-black text-black dark:text-zinc-100 min-h-screen pb-20 font-sans text-[13px] selection:bg-black selection:text-white transition-colors duration-300">
+    <nav class="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-black dark:border-zinc-800 px-6 py-4 transition-colors">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <div class="bg-black dark:bg-zinc-100 text-white dark:text-black p-1.5">
+                        <i data-lucide="layers" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-bold tracking-tight uppercase dark:text-white">RCS Workspace</h1>
+                        <p class="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Dokumentasi & Tutorial</p>
+                    </div>
+                </a>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle" class="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors mr-2">
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+                <a href="index.html" class="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-[9px] uppercase tracking-wider">
+                    Kembali ke Workspace
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-3xl mx-auto px-6 py-16">
+        <header class="mb-16">
+            <h2 class="text-3xl font-extrabold tracking-tighter mb-4 italic uppercase">Tutorial Penggunaan</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 text-sm max-w-xl">
+                Panduan lengkap untuk mengelola spesifikasi kriteria responden dan kerangka variabel penelitian Anda menggunakan RCS Workspace.
+            </p>
+        </header>
+
+        <main class="prose dark:prose-invert max-w-none">
+            <section id="config" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+                <span class="step-number">01</span>
+                <h3>Konfigurasi</h3>
+                <p>Mulai dengan menentukan identitas dasar proyek dan tautan kuesioner Anda. Bagian ini penting untuk pelabelan dokumen, perhitungan estimasi, dan manajemen akses.</p>
+                <ul>
+                    <li><strong>Nama Lengkap:</strong> Identitas pemilik proyek atau peneliti.</li>
+                    <li><strong>Nama Survey:</strong> Judul penelitian atau topik survey yang sedang dikerjakan.</li>
+                    <li><strong>Durasi:</strong> Estimasi waktu pengerjaan dalam hari.</li>
+                    <li><strong>Jumlah Responden:</strong> Target total sampel yang ingin dicapai.</li>
+                    <li><strong>Link Google Form (Tes/Utama):</strong> Simpan tautan kuesioner Anda agar mudah diakses dan ikut tersimpan dalam file ekspor data.</li>
+                </ul>
+            </section>
+
+            <section id="demografi" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+                <span class="step-number">02</span>
+                <h3>Definisi Demografi</h3>
+                <p>Tentukan kriteria responden yang Anda butuhkan. Anda dapat menambah kategori baru dan menentukan persentase distribusi untuk setiap opsi.</p>
+                <ul>
+                    <li>Klik <strong>+ Tambah Kategori</strong> untuk membuat kelompok demografi baru (misal: Usia, Pekerjaan).</li>
+                    <li>Gunakan <strong>+ Sisipkan Opsi</strong> untuk menambah pilihan jawaban di dalam kategori.</li>
+                    <li>Masukkan label dan nilai persentase. Pastikan total persentase dalam satu kategori logis (umumnya 100%).</li>
+                </ul>
+            </section>
+
+            <section id="variabel" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+                <span class="step-number">03</span>
+                <h3>Kerangka Variabel</h3>
+                <p>Susun pertanyaan untuk Variabel X (Independen) dan Variabel Y (Dependen) dengan skala Likert yang seragam.</p>
+                <ul>
+                    <li><strong>Definisi Skala Likert:</strong> Masukkan opsi skala Anda dipisahkan dengan koma (misal: Sangat Tidak Setuju, Tidak Setuju, Setuju, Sangat Setuju).</li>
+                    <li><strong>Tambah Pertanyaan:</strong> Klik ikon plus (+) pada masing-masing variabel untuk menambah baris pertanyaan.</li>
+                    <li><strong>Distribusi:</strong> Masukkan angka distribusi untuk tiap pilihan skala pada setiap pertanyaan.</li>
+                </ul>
+            </section>
+
+            <section class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+                <span class="step-number">04</span>
+                <h3>Contoh Pengisian</h3>
+                <p>Berikut adalah gambaran bagaimana Anda bisa mengisi spesifikasi untuk survei sederhana:</p>
+                
+                <div class="space-y-4 mt-6">
+                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-black dark:border-white">
+                        <p class="font-bold text-xs uppercase mb-1">01. Konfigurasi</p>
+                        <ul class="text-[11px] !mb-0">
+                            <li>Nama Survey: <strong>Survei Kepuasan Aplikasi Food-Delivery</strong></li>
+                            <li>Durasi: <strong>3 Hari</strong></li>
+                            <li>Responden: <strong>100</strong></li>
+                            <li>Link Utama: <strong>https://docs.google.com/forms/...</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-black dark:border-white">
+                        <p class="font-bold text-xs uppercase mb-1">02. Demografi</p>
+                        <ul class="text-[11px] !mb-0">
+                            <li>Kategori: <strong>Domisili</strong> → Jakarta (40%), Bandung (30%), Lainnya (30%)</li>
+                            <li>Kategori: <strong>Pekerjaan</strong> → Mahasiswa (50%), Karyawan (50%)</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-black dark:border-white">
+                        <p class="font-bold text-xs uppercase mb-1">03. Variabel (Skala: STS, TS, S, SS)</p>
+                        <ul class="text-[11px] !mb-0">
+                            <li>ID: <strong>X1</strong> → "Aplikasi mudah digunakan" (Distribusi: 5, 15, 50, 30)</li>
+                            <li>ID: <strong>Y1</strong> → "Saya akan menggunakan aplikasi ini lagi" (Distribusi: 0, 10, 40, 50)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+                <span class="step-number">05</span>
+                <h3>Manajemen Data</h3>
+                <p>RCS Workspace menyimpan data secara otomatis di browser Anda, namun sangat disarankan untuk melakukan ekspor manual.</p>
+                <ul>
+                    <li><strong>Ekspor JSON:</strong> Menyimpan seluruh konfigurasi Anda ke dalam file dengan format <code>rcs_hhmmss_ddmmyyyy.json</code>.</li>
+                    <li><strong>Impor Data:</strong> Mengunggah kembali file JSON yang pernah Anda simpan sebelumnya.</li>
+                </ul>
+            </section>
+
+            <section class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-200 dark:border-zinc-800 mb-8 transition-colors border-dashed">
+                <h3>Estimasi Biaya</h3>
+                <p>Fitur ini memberikan gambaran kasar biaya berdasarkan durasi pengerjaan dan jumlah responden. Tarif dasar saat ini adalah:</p>
+                <div class="bg-zinc-50 dark:bg-zinc-800 p-4 font-mono text-[11px] space-y-1 mb-4">
+                    <div class="flex justify-between"><span>Biaya Durasi:</span> <span>Rp. 25.000 / Hari</span></div>
+                    <div class="flex justify-between"><span>Biaya Responden (Umum):</span> <span>Rp. 350 / Orang</span></div>
+                </div>
+                
+                <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500">Aturan Biaya Khusus (Durasi 1 Hari):</h4>
+                <div class="bg-black text-white dark:bg-zinc-100 dark:text-black p-4 font-mono text-[10px] space-y-1">
+                    <div class="flex justify-between"><span>≤ 50 Responden:</span> <span>Rp. 500 / Orang</span></div>
+                    <div class="flex justify-between"><span>75 Responden:</span> <span>Rp. 400 / Orang</span></div>
+                    <div class="flex justify-between"><span>≥ 100 Responden:</span> <span>Rp. 350 / Orang</span></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-28 pb-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-tight transition-colors">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-black dark:bg-zinc-100 p-1.5 text-white dark:text-black">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                </div>
+                <span class="font-bold text-black dark:text-white uppercase tracking-wider">RCS Workspace</span>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-widest">
+                <span>Respondents Criteria Specification</span>
+                <span class="hidden md:block w-1 h-1 bg-zinc-300 dark:bg-zinc-800 rounded-full"></span>
+                <span>© 2026 All Rights Reserved</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const THEME_KEY = 'rcs_theme';
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            localStorage.setItem(THEME_KEY, theme);
+        }
+
+        const savedTheme = localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.classList.contains('dark');
+            applyTheme(isDark ? 'light' : 'dark');
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
