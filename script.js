@@ -1,18 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const socioContainer = document.getElementById('sociodemographics-container');
-    const xContainer = document.getElementById('x-questions-container');
-    const yContainer = document.getElementById('y-questions-container');
-    const likertOptionsInput = document.getElementById('likert_options');
-    
-    const socioCategoryTemplate = document.getElementById('socio-category-template');
-    const socioOptionTemplate = document.getElementById('socio-option-template');
-    const likertQuestionTemplate = document.getElementById('likert-question-template');
-
     const STORAGE_KEY = 'rrs_studio_data';
     const THEME_KEY = 'rcs_theme';
 
     const themeToggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
+
+    let formQuestions = [];
 
     function applyTheme(theme) {
         if (theme === 'dark') {
@@ -30,9 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDark = html.classList.contains('dark');
         applyTheme(isDark ? 'light' : 'dark');
     });
-
-    let likertOptions = ["Sangat Tidak Setuju", "Tidak Setuju", "Setuju", "Sangat Setuju"];
-    likertOptionsInput.value = likertOptions.join(', ');
 
     function updateInvoice() {
         const durasi = parseInt(document.getElementById('target_durasi_hari').value) || 0;
@@ -102,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTimeout = setTimeout(saveToLocalStorage, 1000);
     }
 
-    ['project_owner', 'project_name', 'target_durasi_hari', 'target_total', 'likert_options', 'gform_test', 'gform_main'].forEach(id => {
+    ['project_owner', 'project_name', 'target_durasi_hari', 'target_total', 'gform_test', 'gform_main'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', () => {
@@ -112,137 +102,352 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function createSocioCategory(name = '', data = {}) {
-        const clone = socioCategoryTemplate.content.cloneNode(true);
-        const categoryDiv = clone.querySelector('div');
-        const nameInput = clone.querySelector('.category-name');
-        const optionsContainer = clone.querySelector('.options-container');
-        
-        nameInput.value = name;
-        nameInput.addEventListener('input', autoSave);
-        
-        categoryDiv.querySelector('.remove-category').addEventListener('click', () => {
-            categoryDiv.remove();
-            autoSave();
-        });
-
-        categoryDiv.querySelector('.add-option').addEventListener('click', () => {
-            createSocioOption(optionsContainer);
-            autoSave();
-        });
-
-        Object.entries(data).forEach(([label, value]) => {
-            createSocioOption(optionsContainer, label, value);
-        });
-
-        if (Object.keys(data).length === 0) {
-            createSocioOption(optionsContainer);
-        }
-
-        socioContainer.appendChild(clone);
-        lucide.createIcons();
+    function stripHtml(html) {
+        if (!html) return '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
     }
 
-    function createSocioOption(container, label = '', value = '') {
-        const clone = socioOptionTemplate.content.cloneNode(true);
-        const optionDiv = clone.querySelector('div');
-        const labelInput = clone.querySelector('.option-label');
-        const valueInput = clone.querySelector('.option-value');
-        
-        labelInput.value = label;
-        valueInput.value = value;
-
-        labelInput.addEventListener('input', autoSave);
-        valueInput.addEventListener('input', autoSave);
-
-        clone.querySelector('.remove-option').addEventListener('click', () => {
-            optionDiv.remove();
-            autoSave();
-        });
-
-        container.appendChild(clone);
-        lucide.createIcons();
+    function extractFormId(url) {
+        if (!url) return null;
+        const match = url.match(/\/forms\/d(?:\/e)?\/([^\/]+)/);
+        return match ? match[1] : null;
     }
 
-    document.getElementById('add-socio-category').addEventListener('click', () => {
-        createSocioCategory();
-        autoSave();
-    });
+    function parseFormResponse(data) {
+        if (!data || !Array.isArray(data) || !data[1]) return { info: {}, questions: [] };
 
-    function updateLikertOptions() {
-        const val = likertOptionsInput.value.trim();
-        if (val) {
-            likertOptions = val.split(',').map(s => s.trim()).filter(s => s !== '');
-            document.querySelectorAll('.likert-question').forEach(q => {
-                const container = q.querySelector('.distribution-inputs');
-                const existingValues = Array.from(container.querySelectorAll('input')).map(i => i.value);
-                
-                container.innerHTML = '';
-                container.className = `distribution-inputs grid grid-cols-${Math.min(likertOptions.length, 6)} gap-2`;
-                
-                likertOptions.forEach((option, index) => {
-                    const input = document.createElement('input');
-                    input.type = 'number';
-                    input.className = 'text-center py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-black dark:text-zinc-100 transition-all focus:border-black dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-700 outline-none';
-                    input.placeholder = `${option} (%)`;
-                    input.title = option;
-                    input.value = existingValues[index] || '';
-                    input.addEventListener('input', autoSave);
-                    container.appendChild(input);
+        const formDescription = data[1][0] ? stripHtml(data[1][0]) : '';
+        const formTitle = data[8] ? stripHtml(data[8]) : '';
+        const items = data[1][1];
+
+        if (!Array.isArray(items)) return { info: { title: formTitle, description: formDescription }, questions: [] };
+
+        const questions = [];
+        let questionNumber = 0;
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (!Array.isArray(item)) continue;
+
+            const id = item[0];
+            const rawTitle = item[1];
+            const description = item[2];
+            const type = item[3];
+            const fields = item[4];
+
+            const title = stripHtml(rawTitle);
+
+            if (type === 8) {
+                questions.push({
+                    id: id,
+                    type: 'section',
+                    title: title,
+                    description: description ? stripHtml(description) : ''
                 });
-            });
+            } else if (type === 2) {
+                questionNumber++;
+                const options = [];
+                if (fields && fields[0] && fields[0][1]) {
+                    fields[0][1].forEach(opt => {
+                        if (opt && opt[0]) {
+                            options.push(stripHtml(opt[0]));
+                        }
+                    });
+                }
+                questions.push({
+                    id: id,
+                    number: questionNumber,
+                    type: 'multiple_choice',
+                    title: title,
+                    description: description ? stripHtml(description) : '',
+                    options: options
+                });
+            } else if (type === 0) {
+                questionNumber++;
+                questions.push({
+                    id: id,
+                    number: questionNumber,
+                    type: 'text',
+                    title: title,
+                    description: description ? stripHtml(description) : ''
+                });
+            } else {
+                questionNumber++;
+                questions.push({
+                    id: id,
+                    number: questionNumber,
+                    type: 'other',
+                    title: title,
+                    description: description ? stripHtml(description) : ''
+                });
+            }
+        }
+
+        return { info: { title: formTitle, description: formDescription }, questions: questions };
+    }
+
+    function renderFormQuestions(formData) {
+        const container = document.getElementById('form-questions-container');
+        const section = document.getElementById('form-questions-section');
+
+        const questions = (formData && formData.questions) ? formData.questions : [];
+        const info = (formData && formData.info) ? formData.info : {};
+
+        if (questions.length === 0 && !info.title && !info.description) {
+            section.classList.add('hidden');
+            container.innerHTML = '';
+            return;
+        }
+
+        section.classList.remove('hidden');
+        container.innerHTML = '';
+
+        if (info.title || info.description) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'p-4 bg-black dark:bg-zinc-100 text-white dark:text-black';
+            infoDiv.innerHTML = `
+                ${info.title ? `<p class="font-bold text-sm mb-1">${info.title}</p>` : ''}
+                ${info.description ? `<p class="text-[10px] opacity-80 whitespace-pre-line">${info.description}</p>` : ''}
+            `;
+            container.appendChild(infoDiv);
+        }
+
+        const typeLabels = {
+            'section': 'Bagian',
+            'multiple_choice': 'Pilihan Ganda',
+            'text': 'Isian Singkat',
+            'other': 'Lainnya'
+        };
+
+        const typeColors = {
+            'section': 'text-black dark:text-white',
+            'multiple_choice': 'text-blue-600 dark:text-blue-400',
+            'text': 'text-green-600 dark:text-green-400',
+            'other': 'text-zinc-500 dark:text-zinc-400'
+        };
+
+        questions.forEach(q => {
+            const div = document.createElement('div');
+
+            if (q.type === 'section') {
+                div.className = 'p-4 bg-zinc-50 dark:bg-zinc-800/50 border-l-4 border-black dark:border-white';
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[9px] font-bold uppercase tracking-widest ${typeColors[q.type]} px-2 py-0.5">${typeLabels[q.type]}</span>
+                    </div>
+                    <p class="font-bold text-xs text-black dark:text-white">${q.title}</p>
+                    ${q.description ? `<p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">${q.description}</p>` : ''}
+                `;
+            } else {
+                div.className = 'p-4 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 hover:border-black dark:hover:border-zinc-600 transition-all';
+                
+                let optionsHtml = '';
+                if (q.type === 'multiple_choice' && q.options.length > 0) {
+                    optionsHtml = `
+                        <div class="flex flex-wrap gap-1.5 mt-3">
+                            ${q.options.map(opt => `
+                                <span class="text-[10px] px-2 py-1 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400">${opt}</span>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                const category = q.category || '';
+                const catChecked = (val) => category === val ? 'checked' : '';
+
+                div.innerHTML = `
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-mono font-bold text-zinc-300 dark:text-zinc-600">${q.number}.</span>
+                            <span class="text-[9px] font-bold uppercase tracking-widest ${typeColors[q.type]} px-2 py-0.5">${typeLabels[q.type]}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="flex items-center gap-1 cursor-pointer text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
+                                <input type="radio" name="cat_${q.id}" value="demografi" ${catChecked('demografi')} class="category-radio w-3 h-3 accent-black dark:accent-white">
+                                Demografi
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
+                                <input type="radio" name="cat_${q.id}" value="variabel_x" ${catChecked('variabel_x')} class="category-radio w-3 h-3 accent-black dark:accent-white">
+                                Variabel X
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
+                                <input type="radio" name="cat_${q.id}" value="variabel_y" ${catChecked('variabel_y')} class="category-radio w-3 h-3 accent-black dark:accent-white">
+                                Variabel Y
+                            </label>
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-medium text-black dark:text-white">${q.title}</p>
+                    ${q.description ? `<p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">${q.description}</p>` : ''}
+                    ${optionsHtml}
+                `;
+
+                div.querySelectorAll('.category-radio').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        q.category = e.target.value;
+                        autoSave();
+                    });
+                });
+            }
+
+            container.appendChild(div);
+        });
+    }
+
+    async function fetchFormQuestions() {
+        const fetchBtn = document.getElementById('fetch-btn');
+        const gformTestInput = document.getElementById('gform_test');
+        const url = gformTestInput.value.trim();
+
+        if (!url) {
+            alert('Silakan isi Link Google Form (Tes) terlebih dahulu.');
+            return;
+        }
+
+        const formId = extractFormId(url);
+        if (!formId) {
+            alert('Format link Google Form tidak valid. Pastikan link mengandung /forms/d/e/ atau /forms/d/.');
+            return;
+        }
+
+        const originalContent = fetchBtn.innerHTML;
+        fetchBtn.disabled = true;
+        fetchBtn.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Fetching...';
+        lucide.createIcons();
+
+        try {
+            const response = await fetch(`https://google-form-proxy.afaa0304.workers.dev/?formId=${formId}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert(`Gagal mengambil data: ${data.error}`);
+                return;
+            }
+
+            formQuestions = parseFormResponse(data);
+            renderFormQuestions(formQuestions);
+            syncGroupingInputs();
             autoSave();
+
+            if (!formQuestions.questions || formQuestions.questions.length === 0) {
+                alert('Tidak ada pertanyaan yang ditemukan pada form ini.');
+            }
+        } catch (err) {
+            console.error('Fetch error:', err);
+            alert('Terjadi kesalahan saat menghubungi server. Periksa koneksi internet Anda.');
+        } finally {
+            fetchBtn.disabled = false;
+            fetchBtn.innerHTML = originalContent;
+            lucide.createIcons();
         }
     }
 
-    likertOptionsInput.addEventListener('change', updateLikertOptions);
+    document.getElementById('fetch-btn').addEventListener('click', fetchFormQuestions);
 
-    function createLikertQuestion(container, id = '', distribution = [], questionText = '') {
-        const clone = likertQuestionTemplate.content.cloneNode(true);
-        const questionDiv = clone.querySelector('div');
-        const idInput = clone.querySelector('.question-id');
-        const textInput = clone.querySelector('.question-text');
-        const inputsContainer = clone.querySelector('.distribution-inputs');
-        
-        idInput.value = id;
-        textInput.value = questionText;
-
-        idInput.addEventListener('input', autoSave);
-        textInput.addEventListener('input', autoSave);
-        
-        inputsContainer.className = `distribution-inputs grid grid-cols-${Math.min(likertOptions.length, 6)} gap-2`;
-
-        likertOptions.forEach((option, index) => {
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.className = 'text-center py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-medium text-black dark:text-zinc-100 transition-all focus:border-black dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-700 outline-none';
-            input.placeholder = `${option} (%)`;
-            input.title = option;
-            input.value = distribution[index] || '';
-            input.addEventListener('input', autoSave);
-            inputsContainer.appendChild(input);
+    function parseRangeInput(str) {
+        if (!str || !str.trim()) return [];
+        const numbers = [];
+        str.split(',').forEach(part => {
+            part = part.trim();
+            if (!part) return;
+            if (part.includes('-')) {
+                const [start, end] = part.split('-').map(n => parseInt(n.trim()));
+                if (!isNaN(start) && !isNaN(end)) {
+                    for (let i = start; i <= end; i++) {
+                        numbers.push(i);
+                    }
+                }
+            } else {
+                const num = parseInt(part);
+                if (!isNaN(num)) {
+                    numbers.push(num);
+                }
+            }
         });
-
-        clone.querySelector('.remove-question').addEventListener('click', () => {
-            questionDiv.remove();
-            autoSave();
-        });
-
-        container.appendChild(clone);
-        lucide.createIcons();
+        return numbers;
     }
 
-    document.getElementById('add-x-question').addEventListener('click', () => {
-        const nextId = `X${xContainer.children.length + 1}`;
-        createLikertQuestion(xContainer, nextId);
-        autoSave();
-    });
+    function formatRangeOutput(numbers) {
+        if (!numbers || numbers.length === 0) return '';
+        const sorted = [...numbers].sort((a, b) => a - b);
+        const parts = [];
+        let start = sorted[0];
+        let end = sorted[0];
 
-    document.getElementById('add-y-question').addEventListener('click', () => {
-        const nextId = `Y${yContainer.children.length + 1}`;
-        createLikertQuestion(yContainer, nextId);
+        for (let i = 1; i < sorted.length; i++) {
+            if (sorted[i] === end + 1) {
+                end = sorted[i];
+            } else {
+                parts.push(start === end ? `${start}` : `${start}-${end}`);
+                start = sorted[i];
+                end = sorted[i];
+            }
+        }
+        parts.push(start === end ? `${start}` : `${start}-${end}`);
+        return parts.join(', ');
+    }
+
+    function syncGroupingInputs() {
+        if (!formQuestions || !formQuestions.questions) return;
+
+        const groups = { demografi: [], variabel_x: [], variabel_y: [] };
+        formQuestions.questions.forEach(q => {
+            if (q.category && q.number && groups[q.category] !== undefined) {
+                groups[q.category].push(q.number);
+            }
+        });
+
+        const demografiInput = document.getElementById('group-demografi');
+        const variabelXInput = document.getElementById('group-variabel_x');
+        const variabelYInput = document.getElementById('group-variabel_y');
+
+        if (demografiInput) demografiInput.value = formatRangeOutput(groups.demografi);
+        if (variabelXInput) variabelXInput.value = formatRangeOutput(groups.variabel_x);
+        if (variabelYInput) variabelYInput.value = formatRangeOutput(groups.variabel_y);
+    }
+
+    function applyGrouping() {
+        const demografiNums = parseRangeInput(document.getElementById('group-demografi').value);
+        const variabelXNums = parseRangeInput(document.getElementById('group-variabel_x').value);
+        const variabelYNums = parseRangeInput(document.getElementById('group-variabel_y').value);
+
+        if (!formQuestions || !formQuestions.questions) return;
+
+        formQuestions.questions.forEach(q => {
+            if (!q.number) return;
+            if (demografiNums.includes(q.number)) {
+                q.category = 'demografi';
+            } else if (variabelXNums.includes(q.number)) {
+                q.category = 'variabel_x';
+            } else if (variabelYNums.includes(q.number)) {
+                q.category = 'variabel_y';
+            } else {
+                delete q.category;
+            }
+        });
+
+        renderFormQuestions(formQuestions);
         autoSave();
-    });
+    }
+
+    document.getElementById('apply-grouping-btn').addEventListener('click', applyGrouping);
+
+    function buildQuestionGroups() {
+        const groups = {};
+        if (!formQuestions || !formQuestions.questions) return groups;
+
+        formQuestions.questions.forEach(q => {
+            if (q.category && q.number) {
+                if (!groups[q.category]) {
+                    groups[q.category] = [];
+                }
+                groups[q.category].push(q.number);
+            }
+        });
+
+        return groups;
+    }
 
     function getFormData() {
         const durasi = parseInt(document.getElementById('target_durasi_hari').value) || 0;
@@ -277,52 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 respondent_cost: respondenCost,
                 total_cost: totalCost
             },
-            sociodemographics: {},
-            likert_distributions: {
-                options: likertOptions,
-                X: {},
-                Y: {}
-            }
+            form_questions: formQuestions,
+            question_groups: buildQuestionGroups()
         };
-
-        document.querySelectorAll('#sociodemographics-container > div').forEach(cat => {
-            const nameInput = cat.querySelector('.category-name');
-            if (nameInput) {
-                const name = nameInput.value;
-                if (name) {
-                    data.sociodemographics[name] = {};
-                    cat.querySelectorAll('.options-container > div').forEach(opt => {
-                        const labelInput = opt.querySelector('.option-label');
-                        const valueInput = opt.querySelector('.option-value');
-                        if (labelInput && valueInput) {
-                            const label = labelInput.value;
-                            const val = parseInt(valueInput.value) || 0;
-                            if (label) {
-                                data.sociodemographics[name][label] = val;
-                            }
-                        }
-                    });
-                }
-            }
-        });
-
-        xContainer.querySelectorAll('.likert-question').forEach(q => {
-            const id = q.querySelector('.question-id').value;
-            const text = q.querySelector('.question-text').value;
-            if (id) {
-                const dist = Array.from(q.querySelectorAll('.distribution-inputs input')).map(i => parseInt(i.value) || 0);
-                data.likert_distributions.X[id] = { soal: text, data: dist };
-            }
-        });
-
-        yContainer.querySelectorAll('.likert-question').forEach(q => {
-            const id = q.querySelector('.question-id').value;
-            const text = q.querySelector('.question-text').value;
-            if (id) {
-                const dist = Array.from(q.querySelectorAll('.distribution-inputs input')).map(i => parseInt(i.value) || 0);
-                data.likert_distributions.Y[id] = { soal: text, data: dist };
-            }
-        });
 
         return data;
     }
@@ -402,39 +564,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateInvoice();
 
-        if (data.likert_distributions && data.likert_distributions.options) {
-            likertOptions = data.likert_distributions.options;
-            likertOptionsInput.value = likertOptions.join(', ');
-        }
-
-        socioContainer.innerHTML = '';
-        if (data.sociodemographics) {
-            Object.entries(data.sociodemographics).forEach(([name, options]) => {
-                createSocioCategory(name, options);
-            });
-        }
-
-        xContainer.innerHTML = '';
-        if (data.likert_distributions && data.likert_distributions.X) {
-            Object.entries(data.likert_distributions.X).forEach(([id, content]) => {
-                if (Array.isArray(content)) {
-                    createLikertQuestion(xContainer, id, content);
-                } else {
-                    createLikertQuestion(xContainer, id, content.data, content.soal);
-                }
-            });
-        }
-
-        yContainer.innerHTML = '';
-        if (data.likert_distributions && data.likert_distributions.Y) {
-            Object.entries(data.likert_distributions.Y).forEach(([id, content]) => {
-                if (Array.isArray(content)) {
-                    createLikertQuestion(yContainer, id, content);
-                } else {
-                    createLikertQuestion(yContainer, id, content.data, content.soal);
-                }
-            });
-        }
+        formQuestions = data.form_questions || { info: {}, questions: [] };
+        renderFormQuestions(formQuestions);
+        syncGroupingInputs();
     }
 
     if (!loadFromLocalStorage()) {
@@ -446,9 +578,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(err => {
                 console.log('File rrs.json tidak ditemukan, memulai dari awal');
-                createSocioCategory('Jenis Kelamin', { 'Laki-Laki': '', 'Perempuan': '' });
-                createLikertQuestion(xContainer, 'X1');
-                createLikertQuestion(yContainer, 'Y1');
             });
     }
 });

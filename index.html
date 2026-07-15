@@ -113,7 +113,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1">
                         <label class="text-[10px] font-semibold text-black dark:text-zinc-400 opacity-60">Link Google Form (Tes) <span class="text-red-500">*</span></label>
-                        <input type="url" id="gform_test" class="w-full px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-700 outline-none font-medium text-black dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all" placeholder="https://docs.google.com/forms/d/e/...">
+                        <div class="flex gap-2">
+                            <input type="url" id="gform_test" class="flex-1 px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-700 outline-none font-medium text-black dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all" placeholder="https://docs.google.com/forms/d/e/...">
+                            <button id="fetch-btn" class="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800 text-black dark:text-white font-semibold border border-zinc-200 dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all text-[9px] uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+                                <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i>
+                                Fetch
+                            </button>
+                        </div>
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-semibold text-black dark:text-zinc-400 opacity-60">Link Google Form (Utama) <span class="text-red-500">*</span></label>
@@ -140,66 +146,39 @@
                 </div>
             </section>
 
-            <section class="bg-white dark:bg-zinc-900 p-6 border border-zinc-300 dark:border-zinc-800 transition-colors">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="flex items-center gap-4">
-                        <h2 class="text-[11px] font-semibold mb-0 flex items-center gap-2 text-black dark:text-white uppercase tracking-tight">
-                            <span class="w-1 h-3 bg-black dark:bg-zinc-100"></span>
-                            02. Demografi
-                        </h2>
-                        <a href="docs.html#demografi" title="Bantuan Demografi" class="text-zinc-300 dark:text-zinc-700 hover:text-black dark:hover:text-zinc-400 transition-colors">
-                            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
-                        </a>
-                    </div>
-                    <button id="add-socio-category" class="text-[9px] font-semibold text-white dark:text-black bg-black dark:bg-zinc-100 px-3 py-1.5 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all uppercase tracking-wider">
-                        + Tambah Kategori
-                    </button>
-                </div>
-                <div id="sociodemographics-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
-            </section>
-
-            <section class="bg-white dark:bg-zinc-900 p-6 border border-zinc-300 dark:border-zinc-800 transition-colors">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-[11px] font-semibold mb-0 flex items-center gap-2 text-black dark:text-white uppercase tracking-tight">
+            <section id="form-questions-section" class="bg-white dark:bg-zinc-900 p-6 border border-zinc-300 dark:border-zinc-800 transition-colors hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-[11px] font-semibold flex items-center gap-2 text-black dark:text-white uppercase tracking-tight">
                         <span class="w-1 h-3 bg-black dark:bg-zinc-100"></span>
-                        03. Kerangka Variabel
+                        02. Pertanyaan Form
                     </h2>
-                    <a href="docs.html#variabel" title="Bantuan Variabel" class="text-zinc-300 dark:text-zinc-700 hover:text-black dark:hover:text-zinc-400 transition-colors">
+                    <a href="docs.html#fetch" title="Bantuan Fetch" class="text-zinc-300 dark:text-zinc-700 hover:text-black dark:hover:text-zinc-400 transition-colors">
                         <i data-lucide="help-circle" class="w-4 h-4"></i>
                     </a>
                 </div>
-                
-                <div class="p-6 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 mb-10">
-                    <label class="text-[10px] font-semibold text-black dark:text-zinc-400 opacity-60 block mb-3">Definisi Skala Likert (Pisahkan dengan koma)</label>
-                    <input type="text" id="likert_options" class="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 focus:border-black dark:focus:border-zinc-500 outline-none font-bold text-black dark:text-white text-xs tracking-tight transition-all" placeholder="STS, TS, S, SS">
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-center border-b border-black dark:border-zinc-800 pb-2">
-                            <h3 class="text-[11px] font-bold text-black dark:text-white flex items-center gap-2 italic uppercase">
-                                Variabel X
-                            </h3>
-                            <button id="add-x-question" class="text-zinc-300 dark:text-zinc-600 hover:text-black dark:hover:text-white transition-colors">
-                                <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                            </button>
+                <div class="p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 mb-6">
+                    <h3 class="text-[10px] font-bold mb-3 uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Grouping Cepat</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Demografi</label>
+                            <input type="text" id="group-demografi" class="w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 outline-none font-medium text-black dark:text-white text-[11px] placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all" placeholder="Contoh: 1-10">
                         </div>
-                        <div id="x-questions-container" class="space-y-4"></div>
-                    </div>
-
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-center border-b border-black dark:border-zinc-800 pb-2">
-                            <h3 class="text-[11px] font-bold text-black dark:text-white flex items-center gap-2 italic uppercase">
-                                Variabel Y
-                            </h3>
-                            <button id="add-y-question" class="text-zinc-300 dark:text-zinc-600 hover:text-black dark:hover:text-white transition-colors">
-                                <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                            </button>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Variabel X</label>
+                            <input type="text" id="group-variabel_x" class="w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 outline-none font-medium text-black dark:text-white text-[11px] placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all" placeholder="Contoh: 21-24, 26-30">
                         </div>
-                        <div id="y-questions-container" class="space-y-4"></div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Variabel Y</label>
+                            <input type="text" id="group-variabel_y" class="w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 outline-none font-medium text-black dark:text-white text-[11px] placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-all" placeholder="Contoh: 25, 31-40">
+                        </div>
                     </div>
+                    <button id="apply-grouping-btn" class="text-[9px] font-semibold text-white dark:text-black bg-black dark:bg-zinc-100 px-3 py-1.5 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all uppercase tracking-wider">
+                        Terapkan
+                    </button>
                 </div>
+                <div id="form-questions-container" class="space-y-4"></div>
             </section>
+
         </main>
 
         <footer class="mt-16 pb-0 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-tight transition-colors">
@@ -216,63 +195,6 @@
             </div>
         </footer>
     </div>
-
-    <template id="socio-category-template">
-        <div class="p-6 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 hover:border-black dark:hover:border-zinc-600 transition-all">
-            <div class="flex justify-between items-start mb-6">
-                <div class="space-y-1 flex-1 mr-4">
-                    <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Nama Kategori</label>
-                    <input type="text" class="category-name w-full bg-transparent font-semibold text-black dark:text-white outline-none text-sm placeholder:text-zinc-200 dark:placeholder:text-zinc-700" placeholder="Misal: Domisili">
-                </div>
-                <button class="remove-category p-1 text-zinc-300 dark:text-zinc-600 hover:text-red-500 transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="options-container space-y-2.5 mb-6"></div>
-            <button class="add-option w-full py-2 border border-dashed border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-black dark:hover:text-white transition-all uppercase tracking-wider">
-                + Sisipkan Opsi Jawaban
-            </button>
-        </div>
-    </template>
-
-    <template id="socio-option-template">
-        <div class="flex items-center gap-2 group/option">
-            <div class="flex-1 flex items-center bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus-within:border-black dark:focus-within:border-zinc-500 transition-all">
-                <input type="text" class="option-label flex-1 bg-transparent px-3 py-2 text-[11px] font-medium text-black dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600" placeholder="Label opsi...">
-                <div class="flex items-center gap-1.5 px-3 border-l border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
-                    <input type="number" class="option-value w-8 bg-transparent text-right text-[11px] font-bold text-black dark:text-white outline-none" placeholder="0">
-                    <span class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">%</span>
-                </div>
-            </div>
-            <button class="remove-option p-2 text-zinc-300 dark:text-zinc-600 hover:text-red-500 transition-colors">
-                <i data-lucide="minus-circle" class="w-4 h-4"></i>
-            </button>
-        </div>
-    </template>
-
-    <template id="likert-question-template">
-        <div class="likert-question bg-white dark:bg-zinc-900 p-6 border border-zinc-300 dark:border-zinc-800 hover:border-black dark:hover:border-zinc-600 transition-all group">
-            <div class="flex justify-between items-start gap-4 mb-6">
-                <div class="flex gap-4 flex-1">
-                    <div class="space-y-1">
-                        <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block">ID</label>
-                        <input type="text" class="question-id font-bold text-black dark:text-white bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 outline-none w-14 py-1.5 text-center text-xs transition-all" placeholder="ID">
-                    </div>
-                    <div class="space-y-1 flex-1">
-                        <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block">Deskripsi Pertanyaan</label>
-                        <input type="text" class="question-text w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 focus:border-black dark:focus:border-zinc-500 outline-none py-1.5 text-[11px] font-medium text-black dark:text-zinc-100 transition-all" placeholder="(opsional) Masukkan pertanyaan di sini...">
-                    </div>
-                </div>
-                <button class="remove-question p-1.5 text-zinc-300 dark:text-zinc-600 hover:text-red-500 transition-colors">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="space-y-2">
-                <label class="text-[9px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest block">Distribusi Skala Likert</label>
-                <div class="distribution-inputs grid grid-cols-4 gap-2"></div>
-            </div>
-        </div>
-    </template>
 
     <script src="script.js"></script>
     <script>lucide.createIcons();</script>

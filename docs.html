@@ -66,7 +66,7 @@
         <header class="mb-16">
             <h2 class="text-3xl font-extrabold tracking-tighter mb-4 italic uppercase">Tutorial Penggunaan</h2>
             <p class="text-zinc-500 dark:text-zinc-400 text-sm max-w-xl">
-                Panduan lengkap untuk mengelola spesifikasi kriteria responden dan kerangka variabel penelitian Anda menggunakan RCS Workspace.
+                Panduan lengkap untuk mengelola spesifikasi kriteria responden Anda menggunakan RCS Workspace.
             </p>
         </header>
 
@@ -84,30 +84,22 @@
                 </ul>
             </section>
 
-            <section id="demografi" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
+            <section id="fetch" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
                 <span class="step-number">02</span>
-                <h3>Definisi Demografi</h3>
-                <p>Tentukan kriteria responden yang Anda butuhkan. Anda dapat menambah kategori baru dan menentukan persentase distribusi untuk setiap opsi.</p>
+                <h3>Fetch Pertanyaan Form</h3>
+                <p>Fitur Fetch memungkinkan Anda mengambil daftar pertanyaan langsung dari Google Form yang telah Anda buat, sehingga tidak perlu memasukkannya secara manual.</p>
                 <ul>
-                    <li>Klik <strong>+ Tambah Kategori</strong> untuk membuat kelompok demografi baru (misal: Usia, Pekerjaan).</li>
-                    <li>Gunakan <strong>+ Sisipkan Opsi</strong> untuk menambah pilihan jawaban di dalam kategori.</li>
-                    <li>Masukkan label dan nilai persentase. Pastikan total persentase dalam satu kategori logis (umumnya 100%).</li>
+                    <li><strong>Pastikan Link Google Form (Tes)</strong> sudah terisi dengan benar (format: <code>https://docs.google.com/forms/d/e/...</code> atau <code>https://docs.google.com/forms/d/...</code>).</li>
+                    <li>Klik tombol <strong>Fetch</strong> di sebelah kolom link untuk mengambil data pertanyaan.</li>
+                    <li>Sistem akan otomatis mengekstrak <strong>formId</strong> dari link dan mengambil data melalui proxy server.</li>
+                    <li>Hasil fetch akan ditampilkan pada bagian <strong>02. Pertanyaan Form</strong> di workspace, lengkap dengan tipe pertanyaan (Pilihan Ganda, Isian Singkat, Bagian) dan opsi jawaban.</li>
+                    <li>Data pertanyaan yang berhasil di-fetch akan ikut tersimpan dalam file ekspor JSON.</li>
                 </ul>
-            </section>
-
-            <section id="variabel" class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
-                <span class="step-number">03</span>
-                <h3>Kerangka Variabel</h3>
-                <p>Susun pertanyaan untuk Variabel X (Independen) dan Variabel Y (Dependen) dengan skala Likert yang seragam.</p>
-                <ul>
-                    <li><strong>Definisi Skala Likert:</strong> Masukkan opsi skala Anda dipisahkan dengan koma (misal: Sangat Tidak Setuju, Tidak Setuju, Setuju, Sangat Setuju).</li>
-                    <li><strong>Tambah Pertanyaan:</strong> Klik ikon plus (+) pada masing-masing variabel untuk menambah baris pertanyaan.</li>
-                    <li><strong>Distribusi:</strong> Masukkan angka distribusi untuk tiap pilihan skala pada setiap pertanyaan.</li>
-                </ul>
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 italic">Catatan: Form harus dalam keadaan publik (tidak private) agar dapat diambil datanya. Jika form private, akan muncul pesan error.</p>
             </section>
 
             <section class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
-                <span class="step-number">04</span>
+                <span class="step-number">03</span>
                 <h3>Contoh Pengisian</h3>
                 <p>Berikut adalah gambaran bagaimana Anda bisa mengisi spesifikasi untuk survei sederhana:</p>
                 
@@ -121,27 +113,11 @@
                             <li>Link Utama: <strong>https://docs.google.com/forms/...</strong></li>
                         </ul>
                     </div>
-                    
-                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-black dark:border-white">
-                        <p class="font-bold text-xs uppercase mb-1">02. Demografi</p>
-                        <ul class="text-[11px] !mb-0">
-                            <li>Kategori: <strong>Domisili</strong> → Jakarta (40%), Bandung (30%), Lainnya (30%)</li>
-                            <li>Kategori: <strong>Pekerjaan</strong> → Mahasiswa (50%), Karyawan (50%)</li>
-                        </ul>
-                    </div>
-
-                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-black dark:border-white">
-                        <p class="font-bold text-xs uppercase mb-1">03. Variabel (Skala: STS, TS, S, SS)</p>
-                        <ul class="text-[11px] !mb-0">
-                            <li>ID: <strong>X1</strong> → "Aplikasi mudah digunakan" (Distribusi: 5, 15, 50, 30)</li>
-                            <li>ID: <strong>Y1</strong> → "Saya akan menggunakan aplikasi ini lagi" (Distribusi: 0, 10, 40, 50)</li>
-                        </ul>
-                    </div>
                 </div>
             </section>
 
             <section class="relative bg-white dark:bg-zinc-900 p-8 border border-zinc-300 dark:border-zinc-800 mb-8 transition-colors">
-                <span class="step-number">05</span>
+                <span class="step-number">04</span>
                 <h3>Manajemen Data</h3>
                 <p>RCS Workspace menyimpan data secara otomatis di browser Anda, namun sangat disarankan untuk melakukan ekspor manual.</p>
                 <ul>
