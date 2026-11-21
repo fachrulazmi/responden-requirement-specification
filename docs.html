@@ -80,6 +80,8 @@
                     <li><strong>Nama Survey:</strong> Judul penelitian atau topik survey yang sedang dikerjakan.</li>
                     <li><strong>Durasi:</strong> Estimasi waktu pengerjaan dalam hari.</li>
                     <li><strong>Jumlah Responden:</strong> Target total sampel yang ingin dicapai.</li>
+                    <li><strong>Jam Aktif per Hari:</strong> Tentukan beberapa rentang menggunakan Jam Mulai dan Jam Selesai. Gunakan <strong>Tambah Jam Aktif</strong> untuk menambah rentang dan <strong>Hapus</strong> untuk menghapusnya. Rentang seperti 22:00–02:00 berakhir pada hari berikutnya. Jam mulai dan selesai harus berbeda, seluruh rentang harus lengkap dan tidak boleh tumpang tindih agar dapat diekspor.</li>
+                    <li><strong>Default Jam Aktif:</strong> Tombol <strong>Default</strong> mengembalikan rentang menjadi 06:00–11:30, 13:30–17:30, dan 19:00–23:30 (total 14 jam per hari). Pengaturan tersimpan otomatis serta ikut ekspor/impor JSON dalam <code>active_hours</code>, berupa daftar objek <code>start</code> dan <code>end</code> berformat HH:MM. Data lama tanpa pengaturan ini menggunakan rentang default.</li>
                     <li><strong>Link Google Form (Tes/Utama):</strong> Simpan tautan kuesioner Anda agar mudah diakses dan ikut tersimpan dalam file ekspor data.</li>
                 </ul>
             </section>
@@ -94,6 +96,8 @@
                     <li>Sistem akan otomatis mengekstrak <strong>formId</strong> dari link dan mengambil data melalui proxy server.</li>
                     <li>Hasil fetch akan ditampilkan pada bagian <strong>02. Pertanyaan Form</strong> di workspace, lengkap dengan tipe pertanyaan (Pilihan Ganda, Isian Singkat, Bagian) dan opsi jawaban.</li>
                     <li>Data pertanyaan yang berhasil di-fetch akan ikut tersimpan dalam file ekspor JSON.</li>
+                    <li><strong>Persentase Jawaban:</strong> Setiap opsi pilihan ganda memiliki kolom persentase 0–100%, termasuk pada kelompok Demografi, Variabel X, dan Variabel Y. Angka desimal diperbolehkan. Isi seluruh opsi hingga total per pertanyaan mencapai 100%; indikator di bawah opsi akan menampilkan total dan peringatan jika belum sesuai.</li>
+                    <li>Persentase ikut tersimpan otomatis serta terbawa saat ekspor dan impor JSON. Persentase yang belum diisi diekspor sebagai 0. File lama tetap dapat diimpor; kolom persentase yang belum tersedia akan tampil kosong.</li>
                 </ul>
                 <p class="text-[11px] text-zinc-400 dark:text-zinc-500 italic">Catatan: Form harus dalam keadaan publik (tidak private) agar dapat diambil datanya. Jika form private, akan muncul pesan error.</p>
             </section>
@@ -130,15 +134,15 @@
                 <h3>Estimasi Biaya</h3>
                 <p>Fitur ini memberikan gambaran kasar biaya berdasarkan durasi pengerjaan dan jumlah responden. Tarif dasar saat ini adalah:</p>
                 <div class="bg-zinc-50 dark:bg-zinc-800 p-4 font-mono text-[11px] space-y-1 mb-4">
-                    <div class="flex justify-between"><span>Biaya Durasi:</span> <span>Rp. 25.000 / Hari</span></div>
-                    <div class="flex justify-between"><span>Biaya Responden (Umum):</span> <span>Rp. 350 / Orang</span></div>
+                    <div class="flex justify-between"><span>Biaya Durasi:</span> <span>Rp. 20.000 / Hari</span></div>
+                    <div class="flex justify-between"><span>Biaya Responden (Umum):</span> <span>Rp. 350 / Reponden</span></div>
                 </div>
                 
                 <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500">Aturan Biaya Khusus (Durasi 1 Hari):</h4>
                 <div class="bg-black text-white dark:bg-zinc-100 dark:text-black p-4 font-mono text-[10px] space-y-1">
-                    <div class="flex justify-between"><span>≤ 50 Responden:</span> <span>Rp. 500 / Orang</span></div>
-                    <div class="flex justify-between"><span>75 Responden:</span> <span>Rp. 400 / Orang</span></div>
-                    <div class="flex justify-between"><span>≥ 100 Responden:</span> <span>Rp. 350 / Orang</span></div>
+                    <div class="flex justify-between"><span>≤ 50 Responden:</span> <span>Rp. 500 / Reponden</span></div>
+                    <div class="flex justify-between"><span>75 Responden:</span> <span>Rp. 400 / Reponden</span></div>
+                    <div class="flex justify-between"><span>≥ 100 Responden:</span> <span>Rp. 350 / Reponden</span></div>
                 </div>
             </section>
         </main>

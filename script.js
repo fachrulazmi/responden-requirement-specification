@@ -6,6 +6,102 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = document.documentElement;
 
     let formQuestions = [];
+    const DEFAULT_ACTIVE_HOURS = [
+        { start: '06:00', end: '11:30' },
+        { start: '13:30', end: '17:30' },
+        { start: '19:00', end: '23:30' }
+    ];
+    let activeHours = DEFAULT_ACTIVE_HOURS.map(range => ({ ...range }));
+
+    function validateActiveHours() {
+        const segments = [];
+        let totalMinutes = 0;
+        if (activeHours.length === 0) return { error: 'Tambahkan minimal satu rentang Jam Aktif.' };
+
+        for (const [index, range] of activeHours.entries()) {
+            if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(range.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(range.end)) {
+                return { error: `Lengkapi jam mulai dan selesai pada rentang ${index + 1}.` };
+            }
+            const toMinutes = value => Number(value.slice(0, 2)) * 60 + Number(value.slice(3));
+            const start = toMinutes(range.start);
+            const end = toMinutes(range.end);
+            if (start === end) return { error: `Jam mulai dan selesai pada rentang ${index + 1} harus berbeda.` };
+            totalMinutes += (end - start + 1440) % 1440;
+            if (end < start) {
+                segments.push({ start, end: 1440 }, { start: 0, end });
+            } else {
+                segments.push({ start, end });
+            }
+        }
+
+        segments.sort((a, b) => a.start - b.start);
+        if (segments.some((segment, index) => index > 0 && segment.start < segments[index - 1].end)) {
+            return { error: 'Rentang Jam Aktif tidak boleh tumpang tindih, termasuk lintas tengah malam.' };
+        }
+        return { totalMinutes };
+    }
+
+    function updateActiveHoursStatus() {
+        const result = validateActiveHours();
+        const status = document.getElementById('active-hours-status');
+        status.className = `text-[10px] ${result.error ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400'}`;
+        status.textContent = result.error || `Total aktif: ${Math.floor(result.totalMinutes / 60)} jam ${result.totalMinutes % 60} menit per hari.`;
+    }
+
+    function renderActiveHours() {
+        const container = document.getElementById('active-hours-container');
+        container.replaceChildren();
+        activeHours.forEach((range, index) => {
+            const row = document.createElement('div');
+            row.className = 'flex flex-wrap items-end gap-3';
+            [['start', 'Jam Mulai'], ['end', 'Jam Selesai']].forEach(([key, title]) => {
+                const label = document.createElement('label');
+                label.className = 'space-y-1 text-[10px] text-zinc-500 dark:text-zinc-400';
+                const caption = document.createElement('span');
+                caption.className = 'block';
+                caption.textContent = title;
+                const input = document.createElement('input');
+                input.type = 'time';
+                input.step = '60';
+                input.value = range[key];
+                input.className = 'block px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 outline-none focus:border-black dark:focus:border-zinc-500 text-black dark:text-white';
+                input.setAttribute('aria-label', `${title} rentang ${index + 1}`);
+                input.addEventListener('input', () => {
+                    range[key] = input.value;
+                    updateActiveHoursStatus();
+                    autoSave();
+                });
+                label.append(caption, input);
+                row.appendChild(label);
+            });
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.textContent = 'Hapus';
+            remove.className = 'px-3 py-1.5 text-[10px] text-red-600 dark:text-red-400 border border-zinc-200 dark:border-zinc-700';
+            remove.setAttribute('aria-label', `Hapus rentang ${index + 1}`);
+            remove.addEventListener('click', () => {
+                activeHours.splice(index, 1);
+                renderActiveHours();
+                autoSave();
+            });
+            row.appendChild(remove);
+            container.appendChild(row);
+        });
+        updateActiveHoursStatus();
+    }
+
+    document.getElementById('add-active-hours-btn').addEventListener('click', () => {
+        activeHours.push({ start: '', end: '' });
+        renderActiveHours();
+        document.getElementById('active-hours-container').lastElementChild.querySelector('input').focus();
+        autoSave();
+    });
+    document.getElementById('default-active-hours-btn').addEventListener('click', () => {
+        activeHours = DEFAULT_ACTIVE_HOURS.map(range => ({ ...range }));
+        renderActiveHours();
+        autoSave();
+    });
+    renderActiveHours();
 
     function applyTheme(theme) {
         if (theme === 'dark') {
@@ -188,6 +284,89 @@ document.addEventListener('DOMContentLoaded', () => {
         return { info: { title: formTitle, description: formDescription }, questions: questions };
     }
 
+    function renderAnswerPercentages(question) {
+        const options = Array.isArray(question.options) ? question.options : [];
+        if (options.length === 0) return null;
+
+        const savedPercentages = Array.isArray(question.option_percentages) ? question.option_percentages : [];
+        question.option_percentages = options.map((_, index) => {
+            const value = savedPercentages[index];
+            return Number.isFinite(value) && value >= 0 && value <= 100 ? value : null;
+        });
+
+        const container = document.createElement('div');
+        container.className = 'mt-3 space-y-2';
+
+        const heading = document.createElement('div');
+        heading.className = 'flex justify-between gap-3 text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500';
+        heading.innerHTML = '<span>Jawaban</span><span>Persentase</span>';
+        container.appendChild(heading);
+
+        const summary = document.createElement('p');
+        summary.setAttribute('role', 'status');
+        summary.setAttribute('aria-live', 'polite');
+
+        function updateSummary() {
+            const values = question.option_percentages;
+            const total = Math.round(values.reduce((sum, value) => sum + (value ?? 0), 0) * 1000000) / 1000000;
+            const complete = values.every(value => value !== null);
+            const valid = complete && total === 100;
+
+            summary.className = `pt-1 text-[10px] font-medium ${valid
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-amber-600 dark:text-amber-400'}`;
+            summary.textContent = `Total: ${total.toLocaleString('id-ID', { maximumFractionDigits: 6 })}% — ${valid
+                ? 'Distribusi sudah sesuai.'
+                : !complete
+                    ? 'Isi semua persentase hingga total 100%.'
+                    : 'Total persentase harus 100%.'}`;
+        }
+
+        options.forEach((option, index) => {
+            const row = document.createElement('label');
+            row.className = 'flex items-center justify-between gap-3 p-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700';
+
+            const text = document.createElement('span');
+            text.className = 'min-w-0 break-words text-[10px] text-zinc-600 dark:text-zinc-400';
+            text.textContent = option;
+
+            const field = document.createElement('span');
+            field.className = 'flex shrink-0 items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400';
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.max = '100';
+            input.step = 'any';
+            input.placeholder = '0–100';
+            input.value = question.option_percentages[index] ?? '';
+            input.className = 'answer-percentage w-20 px-2 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 focus:border-black dark:focus:border-zinc-500 outline-none text-right font-medium text-black dark:text-white';
+            input.setAttribute('aria-label', `Persentase pertanyaan ${question.number}, jawaban ${option}`);
+            input.addEventListener('input', () => {
+                const value = input.valueAsNumber;
+                if (Number.isFinite(value)) {
+                    const percentage = Math.min(100, Math.max(0, value));
+                    question.option_percentages[index] = percentage;
+                    if (percentage !== value) input.value = percentage;
+                } else {
+                    question.option_percentages[index] = null;
+                }
+                updateSummary();
+                autoSave();
+            });
+
+            const unit = document.createElement('span');
+            unit.textContent = '%';
+            field.append(input, unit);
+            row.append(text, field);
+            container.appendChild(row);
+        });
+
+        updateSummary();
+        container.appendChild(summary);
+        return container;
+    }
+
     function renderFormQuestions(formData) {
         const container = document.getElementById('form-questions-container');
         const section = document.getElementById('form-questions-section');
@@ -243,17 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 div.className = 'p-4 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 hover:border-black dark:hover:border-zinc-600 transition-all';
                 
-                let optionsHtml = '';
-                if (q.type === 'multiple_choice' && q.options.length > 0) {
-                    optionsHtml = `
-                        <div class="flex flex-wrap gap-1.5 mt-3">
-                            ${q.options.map(opt => `
-                                <span class="text-[10px] px-2 py-1 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400">${opt}</span>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
                 const category = q.category || '';
                 const catChecked = (val) => category === val ? 'checked' : '';
 
@@ -280,8 +448,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <p class="text-[11px] font-medium text-black dark:text-white">${q.title}</p>
                     ${q.description ? `<p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">${q.description}</p>` : ''}
-                    ${optionsHtml}
                 `;
+
+                if (q.type === 'multiple_choice') {
+                    const percentages = renderAnswerPercentages(q);
+                    if (percentages) div.appendChild(percentages);
+                }
 
                 div.querySelectorAll('.category-radio').forEach(radio => {
                     radio.addEventListener('change', (e) => {
@@ -475,6 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
             project_name: document.getElementById('project_name').value,
             target_durasi_hari: durasi,
             target_total: responden,
+            active_hours: activeHours.map(range => ({ ...range })),
             gform_test: document.getElementById('gform_test').value,
             gform_main: document.getElementById('gform_main').value,
             cost_estimation: {
@@ -508,6 +681,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (missingFields.length > 0) {
             alert(`Ekspor Gagal! Silakan lengkapi bidang berikut:\n- ${missingFields.join('\n- ')}`);
             return;
+        }
+
+        const activeHoursValidation = validateActiveHours();
+        if (activeHoursValidation.error) {
+            alert(`Ekspor Gagal! ${activeHoursValidation.error}`);
+            return;
+        }
+
+        if (Array.isArray(data.form_questions?.questions)) {
+            data.form_questions = {
+                ...data.form_questions,
+                questions: data.form_questions.questions.map(question => question.type === 'multiple_choice'
+                    ? {
+                        ...question,
+                        option_percentages: (question.options || []).map((_, index) => question.option_percentages?.[index] ?? 0)
+                    }
+                    : question)
+            };
         }
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -555,6 +746,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function populateForm(data) {
+        activeHours = (Array.isArray(data.active_hours) ? data.active_hours : DEFAULT_ACTIVE_HOURS).map(range => ({
+            start: typeof range?.start === 'string' ? range.start : '',
+            end: typeof range?.end === 'string' ? range.end : ''
+        }));
+        renderActiveHours();
         document.getElementById('project_owner').value = data.project_owner || '';
         document.getElementById('project_name').value = data.project_name || '';
         document.getElementById('target_durasi_hari').value = data.target_durasi_hari || '';
