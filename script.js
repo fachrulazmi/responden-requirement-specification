@@ -120,18 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(isDark ? 'light' : 'dark');
     });
 
-    function updateInvoice() {
-        const durasi = parseInt(document.getElementById('target_durasi_hari').value) || 0;
-        const responden = parseInt(document.getElementById('target_total').value) || 0;
-        const invoiceSection = document.getElementById('invoice-section');
-
-        if (durasi > 0 || responden > 0) {
-            invoiceSection.classList.remove('hidden');
-        } else {
-            invoiceSection.classList.add('hidden');
-        }
-
-        const durasiRate = 25000;
+    function calculateCosts(durasi, responden) {
+        const durasiRate = 20000;
         let respondenRate = 350;
 
         if (durasi === 1) {
@@ -146,7 +136,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const durasiCost = durasi * durasiRate;
         const respondenCost = responden * respondenRate;
-        const total = durasiCost + respondenCost;
+        const subtotal = durasiCost + respondenCost;
+        const total = Math.floor(subtotal / 5000) * 5000;
+        return {
+            durasiRate,
+            respondenRate,
+            duration_cost: durasiCost,
+            respondent_cost: respondenCost,
+            rounding_discount: subtotal - total,
+            total_cost: total
+        };
+    }
+
+    function updateInvoice() {
+        const durasi = parseInt(document.getElementById('target_durasi_hari').value) || 0;
+        const responden = parseInt(document.getElementById('target_total').value) || 0;
+        const invoiceSection = document.getElementById('invoice-section');
+
+        if (durasi > 0 || responden > 0) {
+            invoiceSection.classList.remove('hidden');
+        } else {
+            invoiceSection.classList.add('hidden');
+        }
+
+        const costs = calculateCosts(durasi, responden);
 
         const formatter = new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -154,13 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
             minimumFractionDigits: 0
         });
 
-        document.getElementById('durasi-label').textContent = `${durasi} Hari x Rp. 25.000`;
-        document.getElementById('durasi-cost').textContent = formatter.format(durasiCost).replace('Rp', 'Rp.');
+        document.getElementById('durasi-label').textContent = `${durasi} Hari x Rp. ${costs.durasiRate.toLocaleString('id-ID')}`;
+        document.getElementById('durasi-cost').textContent = formatter.format(costs.duration_cost).replace('Rp', 'Rp.');
         
-        document.getElementById('responden-label').textContent = `${responden} Responden x Rp. ${respondenRate.toLocaleString('id-ID')}`;
-        document.getElementById('responden-cost').textContent = formatter.format(respondenCost).replace('Rp', 'Rp.');
+        document.getElementById('responden-label').textContent = `${responden} Responden x Rp. ${costs.respondenRate.toLocaleString('id-ID')}`;
+        document.getElementById('responden-cost').textContent = formatter.format(costs.respondent_cost).replace('Rp', 'Rp.');
+        document.getElementById('rounding-discount').textContent = `${costs.rounding_discount > 0 ? '−' : ''}${formatter.format(costs.rounding_discount).replace('Rp', 'Rp.')}`;
         
-        document.getElementById('total-cost').textContent = formatter.format(total).replace('Rp', 'Rp.');
+        document.getElementById('total-cost').textContent = formatter.format(costs.total_cost).replace('Rp', 'Rp.');
     }
 
     function saveToLocalStorage() {
@@ -624,23 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFormData() {
         const durasi = parseInt(document.getElementById('target_durasi_hari').value) || 0;
         const responden = parseInt(document.getElementById('target_total').value) || 0;
-        
-        const durasiRate = 25000;
-        let respondenRate = 350;
-
-        if (durasi === 1) {
-            if (responden <= 50) {
-                respondenRate = 500;
-            } else if (responden === 75) {
-                respondenRate = 400;
-            } else if (responden >= 100) {
-                respondenRate = 350;
-            }
-        }
-
-        const durasiCost = durasi * durasiRate;
-        const respondenCost = responden * respondenRate;
-        const totalCost = durasiCost + respondenCost;
+        const costs = calculateCosts(durasi, responden);
 
         const data = {
             project_owner: document.getElementById('project_owner').value,
@@ -651,9 +649,10 @@ document.addEventListener('DOMContentLoaded', () => {
             gform_test: document.getElementById('gform_test').value,
             gform_main: document.getElementById('gform_main').value,
             cost_estimation: {
-                duration_cost: durasiCost,
-                respondent_cost: respondenCost,
-                total_cost: totalCost
+                duration_cost: costs.duration_cost,
+                respondent_cost: costs.respondent_cost,
+                rounding_discount: costs.rounding_discount,
+                total_cost: costs.total_cost
             },
             form_questions: formQuestions,
             question_groups: buildQuestionGroups()
